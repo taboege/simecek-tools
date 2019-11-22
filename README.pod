@@ -92,6 +92,20 @@ closed under duality, simply by comparing
     $ wget http://atrey.karlin.mff.cuni.cz/~simecek/skola/models/alldis.dat
     $ diff -u0 <(sim-ci alldis.dat | dual4) <(sim-ci alldis.dat) | grep ^-
 
+=head1 SEE ALSO
+
+=over
+
+=item *
+The files are available on Petr Šimeček's website:
+L<http://atrey.karlin.mff.cuni.cz/~simecek/skola/models/>
+
+=back
+
+=head1 THANKS
+
+Thanks go to Petr Šimeček who did the actual work.
+
 =head1 AUTHOR
 
 Tobias Boege <tobs@taboege.de>
