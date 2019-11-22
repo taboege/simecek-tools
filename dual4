@@ -1,0 +1,15 @@
+#!/usr/bin/env perl
+
+# Take a 4-semigraphoid in our format and print its dual.
+
+use Modern::Perl;
+
+while (my $model = <<>>) {
+    chomp $model;
+    # In our format, dualization happens chunk-wise. A chunk is the set of
+    # all (ab|C) with ab fixed. These symbols are contiguous in our strings.
+    # In dimension 4, each chunk is four characters and there are six of
+    # them. Duality in dimension 4 is just reversing each chunk then.
+    my @chunks = $model =~ m/..../g;
+    say join '', map scalar reverse, @chunks;
+}

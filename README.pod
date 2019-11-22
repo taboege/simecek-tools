@@ -1,0 +1,104 @@
+=encoding utf-8
+
+=head1 NAME
+
+simecek-tools - Decode Petr Šimeček's files on representability of CI structures on 4 random variables
+
+=head1 SYNOPSIS
+
+    $ wget -qO- http://atrey.karlin.mff.cuni.cz/~simecek/skola/models/pbin.dat | sim-ci
+    111111111111101110111101
+    111111111111101110111111
+    111111111111101010101111
+    111111111111100111111111
+    111111111111111111111111
+    111111111111101101111111
+    ...
+
+    $ wget -qO- http://atrey.karlin.mff.cuni.cz/~simecek/skola/models/pbin.rep | sim-dist --moments
+    0 0 0 0 -1/2 -1/2 -1/2 1/4 1/4 1/4 0 0 0 0 0
+    0 0 0 0 -1/2 -1/2 -1/2 1/4 1/4 1/2 0 0 -1/4 1/4 -1/4
+    0 0 0 0 -1/2 -1/2 -1/2 1/4 1/4 1/2 0 0 0 0 -1/4
+    0 0 0 0 -1/2 -1/2 -1/2 1/4 1/2 1/2 0 -1/4 1/4 0 -1/2
+    0 0 0 0 -1/2 -1/2 -1/2 1/2 1/2 1/2 -1/4 -1/4 -1/4 1/4 -1/4
+    0 0 0 0 -1/2 -1/2 -1/4 1/4 0 1/4 0 0 -1/4 1/4 0
+    ...
+
+    $ wget -qO- http://atrey.karlin.mff.cuni.cz/~simecek/skola/models/pbin.rep | sim-dist
+    ++++(1/64) +++-(1/64) ++-+(1/64) ++--(5/64) +-++(1/64) +-+-(5/64) +--+(5/64) +---(13/64) -+++(13/64) -++-(5/64) -+-+(5/64) -+--(1/64) --++(5/64) --+-(1/64) ---+(1/64) ----(1/64)
+    ++++(1/64) +++-(1/64) ++-+(1/64) ++--(5/64) +-++(1/64) +-+-(5/64) +--+(5/64) +---(13/64) -+++(17/64) -++-(1/64) -+-+(1/64) -+--(5/64) --++(5/64) --+-(1/64) ---+(1/64) ----(1/64)
+    ++++(1/64) +++-(1/64) ++-+(1/64) ++--(5/64) +-++(3/64) +-+-(3/64) +--+(3/64) +---(15/64) -+++(15/64) -++-(3/64) -+-+(3/64) -+--(3/64) --++(5/64) --+-(1/64) ---+(1/64) ----(1/64)
+    ++++(1/64) +++-(1/64) ++-+(1/64) ++--(5/64) +-++(5/64) +-+-(1/64) +--+(1/64) +---(17/64) -+++(17/64) -++-(1/64) -+-+(5/64) -+--(1/64) --++(1/64) --+-(5/64) ---+(1/64) ----(1/64)
+    ++++(1/64) +++-(1/64) ++-+(1/64) ++--(5/64) +-++(1/64) +-+-(5/64) +--+(5/64) +---(13/64) -+++(21/64) -++-(1/64) -+-+(1/64) -+--(1/64) --++(1/64) --+-(1/64) ---+(1/64) ----(5/64)
+    ++++(1/64) +++-(1/64) ++-+(1/64) ++--(5/64) +-++(1/64) +-+-(5/64) +--+(9/64) +---(9/64) -+++(13/64) -++-(5/64) -+-+(1/64) -+--(5/64) --++(5/64) --+-(1/64) ---+(1/64) ----(1/64)
+    ...
+
+=head1 DESCRIPTION
+
+This repository contains some small tools to decode the files created by
+Petr Šimeček's when he studied representability of CI structures on four
+random variables and which are published on his website:
+
+=over
+
+=item *
+L<http://atrey.karlin.mff.cuni.cz/~simecek/skola/models/>
+
+=back
+
+=head2 sim-ci
+
+Takes one of the C<.dat> files containing CI structures and prints its
+contents in a binary string format compatible with L<https://gaussoids.de>.
+Please refer to Šimeček's and our web page for explanations of those two
+formats.
+
+=head2 sim-dist
+
+Takes one of the C<.rep> files (there is actually only one, C<pbin.rep>)
+and prints its contents. This file contains in each record the moments of
+a binary probability distribution as an array of fifteen IEEE 754 doubles
+(little endian). With the B<--moments> option, these moments are printed,
+in order and separated by spaces. Otherwise the probability distribution
+is reconstructed and printed.
+
+A sample B<--moments> line looks like this (refer to the web page for the
+order of moments):
+
+    0 0 0 0 -1/2 -1/2 -1/2 1/4 1/4 1/4 0 0 0 0 0
+
+whereas when printing the whole distribution, we prefix each probability
+with the 4-element vector which is the elementary event of the probability.
+The distributions are over the state space {+1, -1}, which are abbreviated
+to just C<+> and C<-> in the output:
+
+    ++++(1/64) +++-(1/64) ++-+(1/64) ++--(5/64) +-++(1/64) +-+-(5/64) +--+(5/64) +---(13/64) -+++(13/64) -++-(5/64) -+-+(5/64) -+--(1/64) --++(5/64) --+-(1/64) ---+(1/64) ----(1/64)
+
+This script uses the L<bigrat> pragma in Perl to do all computations with
+arbitrary precision rational numbers. This makes some sense because the
+moments are mostly negative powers of two which have an exact representation
+in IEEE 754. Using bigrats prevents errors from occuring when these
+exact numbers are combined to compute the probabilities. The last three
+models could not be exactly stored, please refer to Šimeček's work for
+exact expressions.
+
+=head2 dual4
+
+This is an auxilliary script to compute the dual of a given semigraphoid
+in the binary string format, as output by C<sim-ci>. It can be used to see
+that the discrete representable CI structures on four variables are not
+closed under duality, simply by comparing
+
+    $ wget http://atrey.karlin.mff.cuni.cz/~simecek/skola/models/alldis.dat
+    $ diff -u0 <(sim-ci alldis.dat | dual4) <(sim-ci alldis.dat) | grep ^+
+
+=head1 AUTHOR
+
+Tobias Boege <tobs@taboege.de>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (C) 2019 by Tobias Boege.
+
+This is free software; you can redistribute it and/or
+modify it under the terms of the Artistic License 2.0.

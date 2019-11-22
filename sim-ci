@@ -1,0 +1,35 @@
+#!/usr/bin/env perl
+
+use Modern::Perl;
+use autodie;
+
+use Scalar::Util qw(openhandle);
+
+sub infile {
+    my $file = shift;
+    return $file if openhandle($file);
+    open my $fh, '<', $file;
+    return $fh;
+}
+
+my $fh = infile(shift // *STDIN);
+binmode $fh;
+
+while (read $fh, my $model, 24) {
+    my @bits = split //, $model;
+    # Reorder from Simecek's to our convention
+    @bits = @bits[
+        0,6,7,18,
+        4,16,17,22,
+        3,12,13,21,
+        1,8,9,19,
+        5,14,15,23,
+        2,10,11,20,
+    ];
+    # Simecek uses 0- and 1-valued bytes, but we use
+    # the ASCII symbols "0" and "1"
+    @bits = map { ord $_ } @bits;
+    # And we use "0" for "is inside", which makes more
+    # sense in our polynomial setting.
+    say join '', map { 1 - $_ } @bits;
+}

@@ -1,0 +1,69 @@
+#!/usr/bin/env perl
+
+use Modern::Perl;
+use Getopt::Long;
+use Carp::Always;
+use autodie;
+use bigrat lib => 'GMP';
+
+use List::Util qw(pairmap);
+use Scalar::Util qw(openhandle);
+use Algorithm::Combinatorics qw(tuples_with_repetition);
+
+# http://atrey.karlin.mff.cuni.cz/~simecek/skola/models/repre.html
+sub P {
+    my ($a, $b, $c, $d, @m) = @_;
+    my $p = 1;
+    $p += $a*$m[0] + $b*$m[1] + $c*$m[2] + $d*$m[3];
+    $p += $a*$b*$m[4] + $a*$c*$m[5] + $a*$d*$m[6] + $b*$c*$m[7] + $b*$d*$m[8] + $c*$d*$m[9];
+    $p += $a*$b*$c*$m[10] + $a*$b*$d*$m[11] + $a*$c*$d*$m[12] + $b*$c*$d*$m[13];
+    $p += $a*$b*$c*$d*$m[14];
+    $p / 16
+}
+
+sub Ptable {
+    sub key {
+        join '', map { $_ > 0 ? '+' : '-'} @_
+    }
+
+    map {
+        key(@$_) => P(@$_, @_)
+    } tuples_with_repetition([+1, -1], 4);
+}
+
+sub infile {
+    my $file = shift;
+    return $file if openhandle($file);
+    open my $fh, '<', $file;
+    return $fh;
+}
+
+GetOptions(
+    "moments" => \my $show_moments,
+) or die "failed parsing options";
+
+my $fh = infile(shift // *STDIN);
+binmode $fh;
+
+while (read $fh, my $moments, 15*8) {
+    # The .rep file contains a number of $moments records,
+    # one for each of the accompanying CI structures.
+    # The record consists of the 15 moments of a positive
+    # binary distribution on {+1,-,1}, encoded as an
+    # IEEE 754 64-bit double in little endian (apparently).
+    # Simecek and the GNU Pascal manual he mentions are
+    # pretty sparse on details, but the three last models
+    # he discusses explicitly on the web page match this
+    # interpretation of the numbers.
+    my @moments = unpack 'd<[15]', $moments;
+    # Apply bigrat pragma to unpack'd floats
+    @moments = map { 1/1* $_ } @moments;
+
+    # Show the moments or the full distributions.
+    if ($show_moments) {
+        say join ' ', @moments;
+    }
+    else {
+        say join ' ', pairmap { "$a($b)" } Ptable(@moments);
+    }
+}
