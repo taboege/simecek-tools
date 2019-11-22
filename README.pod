@@ -90,7 +90,7 @@ that the discrete representable CI structures on four variables are not
 closed under duality, simply by comparing
 
     $ wget http://atrey.karlin.mff.cuni.cz/~simecek/skola/models/alldis.dat
-    $ diff -u0 <(sim-ci alldis.dat | dual4) <(sim-ci alldis.dat) | grep ^+
+    $ diff -u0 <(sim-ci alldis.dat | dual4) <(sim-ci alldis.dat) | grep ^-
 
 =head1 AUTHOR
 
