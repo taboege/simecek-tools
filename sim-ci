@@ -24,7 +24,7 @@ while (read $fh, my $model, 24) {
         3,12,13,21,
         1,8,9,19,
         5,14,15,23,
-        2,10,11,20,
+        2,11,10,20,
     ];
     # Simecek uses 0- and 1-valued bytes, but we use
     # the ASCII symbols "0" and "1"
